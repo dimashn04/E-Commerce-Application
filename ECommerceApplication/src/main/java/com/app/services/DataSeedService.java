@@ -165,7 +165,7 @@ public class DataSeedService {
         if (paymentRepo.count() == 0) {
             List<Order> orders = orderRepo.findAll();
             List<Payment> payments = orders.stream().map(order -> {
-                Payment payment = new Payment(null, order, faker.finance().creditCard());
+                Payment payment = new Payment(null, order, "Bank Transfer", "BCA", faker.numerify("################"));
                 order.setPayment(payment);
                 return payment;
             }).toList();
