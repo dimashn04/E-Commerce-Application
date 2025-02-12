@@ -64,10 +64,25 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	public ModelMapper modelMapper;
 
+	// List of of supported banks
+	private static final List<String> supportedBanks = List.of("BCA", "Mandiri", "BRI", "BNI");
+
 	@Override
-	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod) {
+	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod, String bankName, String cardNumber) {
 
 		Cart cart = cartRepo.findCartByEmailAndCartId(email, cartId);
+
+		if (!"Bank Transfer".equals(paymentMethod)) {
+            throw new APIException("Only 'Bank Transfer' is allowed as payment method");
+        }
+
+		if (!supportedBanks.contains(bankName)) {
+			throw new APIException("Supported banks: BCA, Mandiri, BRI, BNI");
+		}
+
+		if (!cardNumber.matches("\\d{16}")) {
+			throw new APIException("Card number must be 16 digits");
+		}
 
 		if (cart == null) {
 			throw new ResourceNotFoundException("Cart", "cartId", cartId);
@@ -84,6 +99,8 @@ public class OrderServiceImpl implements OrderService {
 		Payment payment = new Payment();
 		payment.setOrder(order);
 		payment.setPaymentMethod(paymentMethod);
+		payment.setBankName(bankName);
+		payment.setCardNumber(cardNumber);
 
 		payment = paymentRepo.save(payment);
 
