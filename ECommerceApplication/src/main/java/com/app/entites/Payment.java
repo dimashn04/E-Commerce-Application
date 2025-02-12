@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,7 +28,14 @@ public class Payment {
 	private Order order;
 
 	@NotBlank
-	@Size(min = 4, message = "Payment method must contain atleast 4 characters")
-	private String paymentMethod;
+    @Pattern(regexp = "Bank Transfer", message = "Only 'Bank Transfer' is allowed as payment method")
+    private String paymentMethod;
 
+	@NotBlank
+    @Pattern(regexp = "BCA|Mandiri|BRI|BNI", message = "Supported banks: BCA, Mandiri, BRI, BNI")
+    private String bankName;
+
+	@NotBlank
+	@Pattern(regexp = "\\d{16}", message = "Card number must be 16 digits")
+	private String cardNumber;
 }
