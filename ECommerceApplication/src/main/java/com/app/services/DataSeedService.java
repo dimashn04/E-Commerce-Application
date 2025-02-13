@@ -27,6 +27,8 @@ public class DataSeedService {
     @Autowired
     private ProductRepo productRepo;
     @Autowired
+    private BankRepo bankRepo;
+    @Autowired
     private CartRepo cartRepo;
     @Autowired
     private OrderRepo orderRepo;
@@ -165,7 +167,8 @@ public class DataSeedService {
         if (paymentRepo.count() == 0) {
             List<Order> orders = orderRepo.findAll();
             List<Payment> payments = orders.stream().map(order -> {
-                Payment payment = new Payment(null, order, "Bank Transfer", "BCA", faker.numerify("################"));
+                Bank bank = bankRepo.findByName("BCA");
+                Payment payment = new Payment(null, order, "Bank Transfer", bank);
                 order.setPayment(payment);
                 return payment;
             }).toList();
