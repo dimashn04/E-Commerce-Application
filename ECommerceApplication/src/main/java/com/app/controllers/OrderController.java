@@ -33,7 +33,7 @@ public class OrderController {
 	
 	@PostMapping("/public/users/{email}/carts/{cartId}/payments/{paymentMethod}/order")
 	public ResponseEntity<OrderDTO> orderProducts(@PathVariable String email, @PathVariable Long cartId, @PathVariable String paymentMethod, @Valid @RequestBody BankTransferDTO bankTransferDTO) {
-		OrderDTO order = orderService.placeOrder(email, cartId, paymentMethod, bankTransferDTO.getBankName(), bankTransferDTO.getCardNumber());
+		OrderDTO order = orderService.placeOrder(email, cartId, paymentMethod, bankTransferDTO.getBankName());
 		
 		return new ResponseEntity<OrderDTO>(order, HttpStatus.CREATED);
 	}
