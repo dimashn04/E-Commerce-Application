@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.app.entites.Bank;
 import com.app.entites.Cart;
 import com.app.entites.CartItem;
 import com.app.entites.Order;
@@ -21,9 +22,11 @@ import com.app.entites.Payment;
 import com.app.entites.Product;
 import com.app.exceptions.APIException;
 import com.app.exceptions.ResourceNotFoundException;
+import com.app.payloads.BankTransferDTO;
 import com.app.payloads.OrderDTO;
 import com.app.payloads.OrderItemDTO;
 import com.app.payloads.OrderResponse;
+import com.app.repositories.BankRepo;
 import com.app.repositories.CartItemRepo;
 import com.app.repositories.CartRepo;
 import com.app.repositories.OrderItemRepo;
@@ -56,6 +59,9 @@ public class OrderServiceImpl implements OrderService {
 	public CartItemRepo cartItemRepo;
 
 	@Autowired
+	public BankRepo bankRepo;
+
+	@Autowired
 	public UserService userService;
 
 	@Autowired
@@ -64,11 +70,8 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	public ModelMapper modelMapper;
 
-	// List of of supported banks
-	private static final List<String> supportedBanks = List.of("BCA", "Mandiri", "BRI", "BNI");
-
 	@Override
-	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod, String bankName, String cardNumber) {
+	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod, String bankName) {
 
 		Cart cart = cartRepo.findCartByEmailAndCartId(email, cartId);
 
@@ -76,12 +79,9 @@ public class OrderServiceImpl implements OrderService {
             throw new APIException("Only 'Bank Transfer' is allowed as payment method");
         }
 
-		if (!supportedBanks.contains(bankName)) {
-			throw new APIException("Supported banks: BCA, Mandiri, BRI, BNI");
-		}
-
-		if (!cardNumber.matches("\\d{16}")) {
-			throw new APIException("Card number must be 16 digits");
+		Bank bank = bankRepo.findByName(bankName);
+		if (bank == null) {
+			throw new APIException("Unsupported bank: " + bankName);
 		}
 
 		if (cart == null) {
@@ -99,8 +99,7 @@ public class OrderServiceImpl implements OrderService {
 		Payment payment = new Payment();
 		payment.setOrder(order);
 		payment.setPaymentMethod(paymentMethod);
-		payment.setBankName(bankName);
-		payment.setCardNumber(cardNumber);
+		payment.setBank(bank);
 
 		payment = paymentRepo.save(payment);
 
@@ -143,6 +142,10 @@ public class OrderServiceImpl implements OrderService {
 		OrderDTO orderDTO = modelMapper.map(savedOrder, OrderDTO.class);
 		
 		orderItems.forEach(item -> orderDTO.getOrderItems().add(modelMapper.map(item, OrderItemDTO.class)));
+
+		BankTransferDTO bankTransferDTO = new BankTransferDTO();
+		bankTransferDTO.setBankName(bank.getName());
+		bankTransferDTO.setStoreAccountNumber(bank.getStoreAccountNumber());
 
 		return orderDTO;
 	}
