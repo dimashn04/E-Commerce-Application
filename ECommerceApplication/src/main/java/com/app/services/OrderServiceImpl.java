@@ -151,8 +151,10 @@ public class OrderServiceImpl implements OrderService {
 		
 		orderItems.forEach(item -> orderDTO.getOrderItems().add(modelMapper.map(item, OrderItemDTO.class)));
 
-		bankTransferDTO.setStoreAccountNumber(bank.getStoreAccountNumber());
-		orderDTO.setBankTransfer(bankTransferDTO);
+		BankTransferDTO bankTransferDTOResponse = new BankTransferDTO();
+		bankTransferDTOResponse.setBankName(bank.getName());
+		bankTransferDTOResponse.setStoreAccountNumber(bank.getStoreAccountNumber());
+		orderDTO.setBankTransfer(bankTransferDTOResponse);
 
 		return orderDTO;
 	}
