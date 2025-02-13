@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -31,11 +33,7 @@ public class Payment {
     @Pattern(regexp = "Bank Transfer", message = "Only 'Bank Transfer' is allowed as payment method")
     private String paymentMethod;
 
-	@NotBlank
-    @Pattern(regexp = "BCA|Mandiri|BRI|BNI", message = "Supported banks: BCA, Mandiri, BRI, BNI")
-    private String bankName;
-
-	@NotBlank
-	@Pattern(regexp = "\\d{16}", message = "Card number must be 16 digits")
-	private String cardNumber;
+	@ManyToOne
+    @JoinColumn(name = "bank_id", nullable = false)
+    private Bank bank;
 }
