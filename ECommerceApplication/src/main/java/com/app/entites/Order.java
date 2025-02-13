@@ -39,7 +39,7 @@ public class Order {
 
 	private LocalDate orderDate;
 	
-	@OneToOne
+	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "payment_id")
 	private Payment payment;
 	
