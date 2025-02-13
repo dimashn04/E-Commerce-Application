@@ -3,6 +3,7 @@ package com.app.services;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -20,6 +21,7 @@ import com.app.entites.Order;
 import com.app.entites.OrderItem;
 import com.app.entites.Payment;
 import com.app.entites.Product;
+import com.app.entites.User;
 import com.app.exceptions.APIException;
 import com.app.exceptions.ResourceNotFoundException;
 import com.app.payloads.BankTransferDTO;
@@ -71,14 +73,20 @@ public class OrderServiceImpl implements OrderService {
 	public ModelMapper modelMapper;
 
 	@Override
-	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod, String bankName) {
+	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod, BankTransferDTO bankTransferDTO) {
 
 		Cart cart = cartRepo.findCartByEmailAndCartId(email, cartId);
+
+		Optional<User> user = userRepo.findByEmail(email);
+		if (!user.isPresent()) {
+			throw new ResourceNotFoundException("User", "email", email);
+		}
 
 		if (!"Bank Transfer".equals(paymentMethod)) {
             throw new APIException("Only 'Bank Transfer' is allowed as payment method");
         }
 
+		String bankName = bankTransferDTO.getBankName();
 		Bank bank = bankRepo.findByName(bankName);
 		if (bank == null) {
 			throw new APIException("Unsupported bank: " + bankName);
@@ -143,9 +151,8 @@ public class OrderServiceImpl implements OrderService {
 		
 		orderItems.forEach(item -> orderDTO.getOrderItems().add(modelMapper.map(item, OrderItemDTO.class)));
 
-		BankTransferDTO bankTransferDTO = new BankTransferDTO();
-		bankTransferDTO.setBankName(bank.getName());
 		bankTransferDTO.setStoreAccountNumber(bank.getStoreAccountNumber());
+		orderDTO.setBankTransfer(bankTransferDTO);
 
 		return orderDTO;
 	}
