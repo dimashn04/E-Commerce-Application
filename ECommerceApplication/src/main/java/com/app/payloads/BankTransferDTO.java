@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class BankTransferDTO {
     
     private String bankName;
-    private String cardNumber;
+    private String storeAccountNumber;
 
 }
